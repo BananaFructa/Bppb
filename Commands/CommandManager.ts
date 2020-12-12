@@ -1,6 +1,8 @@
 import {ArgumentMode} from "./ArgsUtils"
 
 import {CPing} from "./CPing"
+import { CPredict } from "./CPredict";
+import { CPyPing } from "./CPyPing";
 
 export class CommandManager {
     static Commands = [];
@@ -8,7 +10,9 @@ export class CommandManager {
 
     /** Loads the commands */
     static LoadCommands() {
+        this.Commands.push(new CPyPing);
         this.Commands.push(new CPing);
+        this.Commands.push(new CPredict);
     }
 
     /** Sets the prefix

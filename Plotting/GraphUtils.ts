@@ -4,14 +4,20 @@ import * as Canvas from "canvas"
 
 const BaseValueDisplayFactor = 2.3/2;
 const BaseValueDisplayFactor_N = 2.6/2;
+const BottomMargin = 50;
+const RightMargin = 350;
+const LeftMargin = 50;
 
 const GraphMode = Object.freeze({ "POSITIVE_ONLY":0 , "POSITIVE_NEGATIVE":1  });
 
 let ImageCanvas : Canvas.Canvas;
 let ImageContext : Canvas.CanvasRenderingContext2D;
 
+let HorizontalInfo : string[] = [];
+
 interface PlotData {
     ValueSet : number[];
+    EmptyUnits : number;
     Color : number;
 };
 
@@ -22,6 +28,7 @@ Init();
 function ClearCanvas() {
     Plots = [];
     Init();
+    HorizontalInfo = [];
 }
 
 async function Init() {
@@ -41,26 +48,26 @@ async function Init() {
  * @param  BaseValueOnDisplay The value of the graph which coresponds to the top of the image
  */
 
-function DrawGraph(Image,ImageContext,Color,ValueSet,BaseValueOnDisplay,GMode) {
+function DrawGraph(plot : PlotData,BaseValueOnDisplay : number,GMode : number,Spacing : number) : void {
 
     let height;
 
-    if (GMode === GraphMode.POSITIVE_ONLY) height = Image.height;
-    else if (GMode === GraphMode.POSITIVE_NEGATIVE) height = Image.height/2;
+    if (GMode === GraphMode.POSITIVE_ONLY) height = ImageCanvas.height;
+    else if (GMode === GraphMode.POSITIVE_NEGATIVE) height = ImageCanvas.height/2;
 
     ImageContext.beginPath();
 
-    let R = (Color & 0xff0000) >>> 16;
-    let G = (Color & 0x00ff00) >>> 8;
-    let B = Color & 0x0000ff;
+    let R = (plot.Color & 0xff0000) >>> 16;
+    let G = (plot.Color & 0x00ff00) >>> 8;
+    let B = plot.Color & 0x0000ff;
 
     ImageContext.strokeStyle = "rgba(" + R +  "," + G + "," + B + ",1)";
             
-    let SpaceBetweenValues = Image.width / (ValueSet.length - 1);
+    let SpaceBetweenValues : number = (ImageCanvas.width - (LeftMargin + RightMargin)) / Spacing;
     
-    for (let i = 0;i < ValueSet.length;i++) {
-        if (i == 0) ImageContext.moveTo(i * SpaceBetweenValues,height * (1 - ValueSet[i]/BaseValueOnDisplay));
-        else ImageContext.lineTo(i * SpaceBetweenValues,height * (1 - ValueSet[i]/BaseValueOnDisplay));
+    for (let i = plot.EmptyUnits ;i < plot.ValueSet.length + plot.EmptyUnits;i++) {
+        if (i == 0) ImageContext.moveTo(i * SpaceBetweenValues + RightMargin,height * (1 - plot.ValueSet[i]/BaseValueOnDisplay));
+        else ImageContext.lineTo(i * SpaceBetweenValues + RightMargin,height * (1 - plot.ValueSet[i]/BaseValueOnDisplay));
     }
 
     ImageContext.lineWidth = 3;
@@ -76,7 +83,7 @@ function DrawGraph(Image,ImageContext,Color,ValueSet,BaseValueOnDisplay,GMode) {
  * @param  BaseValueOnDisplay The value of the graph which coresponds to the top of the image
  */
 
-export function DisplayValueLine(Value : number,BaseValueOnDisplay : number,GMode) : void {
+function DisplayValueLine(Value : number,BaseValueOnDisplay : number,GMode) : void {
     let ValueTxt : string = Value.toFixed(2);
   
     let height;
@@ -90,7 +97,9 @@ export function DisplayValueLine(Value : number,BaseValueOnDisplay : number,GMod
     ImageContext.beginPath();
     ImageContext.strokeStyle = "rgba(255,255,255,1)";
     ImageContext.fillStyle = "#ccc";
-    ImageContext.font = "bold 23pt Sans";
+    ImageContext.font = "bold 18pt Sans";
+    ImageContext.textAlign = "left";
+    ImageContext.textBaseline = "bottom";
     ImageContext.fillText(ValueTxt,1,height * (1 - Value/BaseValueOnDisplay) - 5);
     ImageContext.moveTo(0,height * (1 -Value/BaseValueOnDisplay))
     ImageContext.lineTo(ImageCanvas.width,height * (1 -Value/BaseValueOnDisplay));
@@ -99,28 +108,56 @@ export function DisplayValueLine(Value : number,BaseValueOnDisplay : number,GMod
     ImageContext.closePath();
 }
 
+function DisplayVerticaLines(PlotHorizontalUnits : number,Info : string[]) {
+    ImageContext.strokeStyle = "rgba(255,255,255,1)";
+    ImageContext.fillStyle = "#ccc";
+    ImageContext.font = "bold 15pt Sans";
+    ImageContext.textAlign = "center";
+    ImageContext.textBaseline = "top";
+
+    let SpaceBetweenValues : number = (ImageCanvas.width-(LeftMargin+RightMargin)) / PlotHorizontalUnits;
+
+    for (let i = 0;i < PlotHorizontalUnits;i++) {
+        ImageContext.beginPath();
+        if (Info.length == 0 || Info.length <= i) {
+            ImageContext.moveTo(i * SpaceBetweenValues + RightMargin,0);
+        } else {
+            ImageContext.fillText(Info[i],i * SpaceBetweenValues + RightMargin,0);
+            ImageContext.moveTo(i * SpaceBetweenValues + RightMargin,30);
+        }
+        ImageContext.lineTo(i * SpaceBetweenValues + RightMargin,ImageCanvas.height);
+        ImageContext.stroke();
+        ImageContext.closePath();
+    }
+
+}
+
 /** 
 * @param ValueSet An array of values that will be translated into a graph, index 0 being the origin
 * @param Color A 3 byte couple that represents the RGB values of the color you want
 */
-export async function Plot(ValueSet,Color) : Promise<void> {
-    Plots.push({ValueSet,Color});
+export async function Plot(ValueSet,Color,EmptyUnits = 0) : Promise<void> {
+    Plots.push({ValueSet,EmptyUnits,Color});
 }
 
-export function SaveGraph(PictureResultPath,GMode = GraphMode.POSITIVE_ONLY) {
+export function SetHorizontalUnist(Info : string[]) {
+    HorizontalInfo = Info;
+}
+
+export function SaveGraph(PictureResultPath,yLines : number,GMode = GraphMode.POSITIVE_ONLY) {
     ImageContext.beginPath();
 
     let BaseValue : number = 0;
 
     if (GMode === GraphMode.POSITIVE_ONLY) {
-        for (let i = 0;i < Plots.length;i++) {
+        for (let i : number = 0;i < Plots.length;i++) {
             let Temp : number = Utils.GetMaxFromList(Plots[i].ValueSet);
             if (BaseValue < Temp) {
                 BaseValue = Temp;
             }
         }
     } else if (GMode === GraphMode.POSITIVE_NEGATIVE) {
-        for (let i = 0;i < Plots.length;i++) {
+        for (let i : number = 0;i < Plots.length;i++) {
             let Temp : number = Utils.GetMaxAbsFromList(Plots[i].ValueSet);
             if (BaseValue < Temp) {
                 BaseValue = Temp;
@@ -132,22 +169,30 @@ export function SaveGraph(PictureResultPath,GMode = GraphMode.POSITIVE_ONLY) {
 
     if (GMode === GraphMode.POSITIVE_ONLY) {
         BaseValueOnDisplay *= BaseValueDisplayFactor;
-
-        DisplayValueLine(BaseValue,BaseValueOnDisplay,GMode);
-        DisplayValueLine(BaseValue/2,BaseValueOnDisplay,GMode);
-        DisplayValueLine(BaseValue*3/4,BaseValueOnDisplay,GMode);
-        DisplayValueLine(BaseValue/4,BaseValueOnDisplay,GMode);
+        for (let i : number = 0;i <= yLines;i++) {
+            DisplayValueLine(BaseValue * (i/yLines),BaseValueOnDisplay,GMode);
+        }
     } else if (GMode === GraphMode.POSITIVE_NEGATIVE) {
         BaseValueOnDisplay *= BaseValueDisplayFactor_N;
 
-        DisplayValueLine(BaseValue,BaseValueOnDisplay,GMode);
-        DisplayValueLine(BaseValue/2,BaseValueOnDisplay,GMode);
-        DisplayValueLine(-BaseValue/2,BaseValueOnDisplay,GMode);
-        DisplayValueLine(-BaseValue,BaseValueOnDisplay,GMode);
+        for (let i : number = 0;i <= yLines/2;i++) {
+            DisplayValueLine(BaseValue * (i/yLines),BaseValueOnDisplay,GMode);
+            DisplayValueLine(-BaseValue * (i/yLines),BaseValueOnDisplay,GMode);
+        }
     }
 
+    let LargestGraphLenght : number = 0;
+
     for (let i = 0;i < Plots.length;i++) {
-        DrawGraph(ImageCanvas,ImageContext,Plots[i].Color,Plots[i].ValueSet,BaseValueOnDisplay,GMode);
+        if (LargestGraphLenght < Plots[i].ValueSet.length) {
+            LargestGraphLenght = Plots[i].ValueSet.length;
+        }
+    }
+
+    DisplayVerticaLines(LargestGraphLenght,HorizontalInfo);
+
+    for (let i = 0;i < Plots.length;i++) {
+        DrawGraph(Plots[i],BaseValueOnDisplay,GMode,LargestGraphLenght);
     }
 
     let Base64Image = ImageCanvas.toDataURL().split(";base64,").pop();
