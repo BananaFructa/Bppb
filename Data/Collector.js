@@ -5,7 +5,7 @@ let Items = JSON.parse(fs.readFileSync("../ItemList.json"));
 
 if (!fs.existsSync("./Data/WHEAT.json")) CreateDatabse();
 
-let Job = new cron.CronJob("58 1-23/2 * * *",AddData,null,true,"Europe/London");
+let Job = new cron.CronJob("59 1-23/2 * * *",AddData,null,true,"Europe/London");
 Job.start();
 
 function AddData() {
