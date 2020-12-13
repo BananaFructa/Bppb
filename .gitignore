@@ -5,5 +5,5 @@ BazaarAI
 BazaarAI(old)
 TestDataset
 MySqlConfig.json
-Data/Data/*
+Data/Data/*.json
 Prediction.json
