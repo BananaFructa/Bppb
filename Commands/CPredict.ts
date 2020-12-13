@@ -68,26 +68,29 @@ export class CPredict extends Command {
 
         let Embed :Discord.MessageEmbed = new Discord.MessageEmbed().setColor("#327fa8");
         let Message :Discord.Message =  Args[ArgumentIndexes.MESSAGE];
+        if (Args[1] != undefined) {
+            let Item : string = this.NormalToItemText(Args[1]);
 
-        let Item : string = this.NormalToItemText(Args[1]);
+            if (this.Items.includes(Item)) {
 
-        if (this.Items.includes(Item) && Item != undefined) {
+                Graph.ClearCanvas();
+                let info = [];
+                for (let i = -20;i <= 19;i++) info[i+20] = (i*6) + "h";
+                let Prediction : DataApi.ItemData = DataApi.GetPredictionForItem(Item);
+                let HistoricData : DataApi.ItemData = DataApi.GetLast126HoursItemData(Item);
+                Graph.Plot(Prediction.BuyData,0xffd49d08,20);
+                Graph.Plot(Prediction.SellData,0xff0c9196,20);
+                Graph.Plot(HistoricData.BuyData,0xffc45b10);
+                Graph.Plot(HistoricData.SellData,0xff0c3696);
+                Graph.SetHorizontalUnist(info);
+                Graph.SaveGraph("out.png",10);
 
-            Graph.ClearCanvas();
-            let info = [];
-            for (let i = -20;i <= 19;i++) info[i+20] = (i*6) + "h";
-            let Prediction : DataApi.ItemData = DataApi.GetPredictionForItem(Item);
-            let HistoricData : DataApi.ItemData = DataApi.GetLast126HoursItemData(Item);
-            Graph.Plot(Prediction.BuyData,0xffd49d08,20);
-            Graph.Plot(Prediction.SellData,0xff0c9196,20);
-            Graph.Plot(HistoricData.BuyData,0xffc45b10);
-            Graph.Plot(HistoricData.SellData,0xff0c3696);
-            Graph.SetHorizontalUnist(info);
-            Graph.SaveGraph("out.png",10);
+                Embed.setTitle("Prediction for " + this.ItemTextToNormal(Item));
+                Embed.attachFiles(["out.png"]).setImage("attachment://out.png");
 
-            Embed.setTitle("Prediction for " + this.ItemTextToNormal(Item));
-            Embed.attachFiles(["out.png"]).setImage("attachment://out.png");
-
+            } else {
+                Embed.setTitle("Unknown Item");
+            }
         } else {
             Embed.setTitle("Unknown Item");
         }
