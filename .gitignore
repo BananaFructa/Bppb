@@ -1,5 +1,9 @@
 auth
 out.png
 node_modules
-TestPythonInput.json
 BazaarAI
+BazaarAI(old)
+TestDataset
+MySqlConfig.json
+Data/Data/*
+Prediction.json

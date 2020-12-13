@@ -25,7 +25,7 @@ let Plots : PlotData[] = [];
 
 Init();
 
-function ClearCanvas() {
+export function ClearCanvas() {
     Plots = [];
     Init();
     HorizontalInfo = [];
@@ -65,9 +65,9 @@ function DrawGraph(plot : PlotData,BaseValueOnDisplay : number,GMode : number,Sp
             
     let SpaceBetweenValues : number = (ImageCanvas.width - (LeftMargin + RightMargin)) / Spacing;
     
-    for (let i = plot.EmptyUnits ;i < plot.ValueSet.length + plot.EmptyUnits;i++) {
-        if (i == 0) ImageContext.moveTo(i * SpaceBetweenValues + RightMargin,height * (1 - plot.ValueSet[i]/BaseValueOnDisplay));
-        else ImageContext.lineTo(i * SpaceBetweenValues + RightMargin,height * (1 - plot.ValueSet[i]/BaseValueOnDisplay));
+    for (let i = 0;i < plot.ValueSet.length;i++) {
+        if (i == 0) ImageContext.moveTo((i+plot.EmptyUnits) * SpaceBetweenValues + RightMargin,height * (1 - plot.ValueSet[i]/BaseValueOnDisplay));
+        else ImageContext.lineTo((i+plot.EmptyUnits) * SpaceBetweenValues + RightMargin,height * (1 - plot.ValueSet[i]/BaseValueOnDisplay));
     }
 
     ImageContext.lineWidth = 3;
@@ -184,8 +184,8 @@ export function SaveGraph(PictureResultPath,yLines : number,GMode = GraphMode.PO
     let LargestGraphLenght : number = 0;
 
     for (let i = 0;i < Plots.length;i++) {
-        if (LargestGraphLenght < Plots[i].ValueSet.length) {
-            LargestGraphLenght = Plots[i].ValueSet.length;
+        if (LargestGraphLenght < Plots[i].ValueSet.length + Plots[i].EmptyUnits) {
+            LargestGraphLenght = Plots[i].ValueSet.length + Plots[i].EmptyUnits;
         }
     }
 

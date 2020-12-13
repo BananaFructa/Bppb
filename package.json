@@ -1,0 +1,11 @@
+{
+    "name": "bppb",
+    "version": "1.0.0",
+    "dependencies": {
+        "@types/node": "^7.0.5",
+        "canvas": "^2.6.1",
+        "cron": "^1.8.2",
+        "discord.js": "^12.5.1",
+        "node-fetch": "^2.6.1"
+    }
+}
