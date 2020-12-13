@@ -3,7 +3,6 @@ import json
 import math
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
 
 BUY_INDEX = 0
 SELL_INDEX = 1
