@@ -2,8 +2,13 @@ import {spawn} from "child_process"
 
 let Command : string = "python";
 
-if (process.platform.startsWith("win")) Command = "py"; // Windows
-else if (process.platform.startsWith("linux")) Command = "python3"; // Linux
+if (process.platform.startsWith("win")) {
+    Command = "py"; // Windows
+    console.log("Platform: Windows")
+} else if (process.platform.startsWith("linux"))  {
+    Command = "python3"; // Linux
+    console.log("Platform: Linux");
+}
 
 let AiProcess = spawn(Command,["./AI/AiRunner.py"]);
 

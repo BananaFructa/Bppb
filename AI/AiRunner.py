@@ -5,9 +5,6 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-physical_devices = tf.config.list_physical_devices('GPU') 
-tf.config.experimental.set_memory_growth(physical_devices[0], True)
-
 BUY_INDEX = 0
 SELL_INDEX = 1
 
@@ -65,6 +62,7 @@ while True:
         print("PONG")
     elif (data.startswith("INPUT_")):
         Prediction = RunPrediction(data.replace("INPUT_",""))
-        print(json.dumps(Prediction.tolist()))
+        open("./PythonOutput.json","w").write(json.dumps(Prediction.tolist()))
+        print("EXEC_1")
 
     
