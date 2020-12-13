@@ -1,5 +1,4 @@
 import {spawn} from "child_process"
-import { resolve } from "path";
 
 let Command : string = "python";
 
