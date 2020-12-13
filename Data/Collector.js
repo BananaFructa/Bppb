@@ -1,7 +1,7 @@
 const fs = require("fs");
 const fetch = require("node-fetch");
 const cron = require("cron");
-let Items = JSON.parse(fs.readFileSync("./ItemList.json"));
+let Items = JSON.parse(fs.readFileSync("../ItemList.json"));
 
 if (!fs.existsSync("./Data/WHEAT.json")) CreateDatabse();
 
