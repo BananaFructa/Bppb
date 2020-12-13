@@ -71,7 +71,7 @@ export class CPredict extends Command {
 
         let Item : string = this.NormalToItemText(Args[1]);
 
-        if (this.Items.includes(Item)) {
+        if (this.Items.includes(Item) && Item != undefined) {
 
             Graph.ClearCanvas();
             let info = [];
