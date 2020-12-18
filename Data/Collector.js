@@ -13,8 +13,8 @@ function AddData() {
         response.text().then((Data_) => {
             let Data = JSON.parse(Data_);
             Items.forEach(element => {
-                let buy = Data["products"][element]["buy_sumarry"][0]["pricePerUnit"];
-                let sell = Data["products"][element]["sell_sumarry"][0]["pricePerUnit"];
+                let buy = Data["products"][element]["buy_summary"][0]["pricePerUnit"];
+                let sell = Data["products"][element]["sell_summary"][0]["pricePerUnit"];
                 let StoredData = JSON.parse(fs.readFileSync("./Data/"+element.replace(":","")+".json").toString());
                 StoredData["buy"].push(buy);
                 StoredData["sell"].push(sell);
